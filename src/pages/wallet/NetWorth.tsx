@@ -1,26 +1,24 @@
 import { Button } from "components/general"
 import { Read } from "components/token"
 import { TooltipIcon } from "components/display"
-import { useBankBalance } from "data/queries/bank"
+import { useBankBalance, useIsWalletEmpty } from "data/queries/bank"
 import { useExchangeRates } from "data/queries/coingecko"
 import { useCurrency } from "data/settings/Currency"
 import { useNativeDenoms } from "data/token"
 import { useTranslation } from "react-i18next"
 import styles from "./NetWorth.module.scss"
-import { useWalletRoute, Path } from "./Wallet"
+import { Path, useWalletRoute } from "./Wallet"
 import { capitalize } from "@mui/material"
 import NetWorthTooltip from "./NetWorthTooltip"
-import { FIAT_RAMP, KADO_API_KEY } from "config/constants"
+import { FIAT_RAMP, GUARDARIAN_API_KEY } from "config/constants"
 // import { Add as AddIcon, Send as SendIcon } from "@mui/icons-material"
 import classNames from "classnames"
 import qs from "qs"
-import { useNetwork } from "data/wallet"
+import { useChainID, useNetwork, useNetworkName } from "data/wallet"
 import { useInterchainAddresses } from "auth/hooks/useAddress"
-import { useNetworkName } from "data/wallet"
 import { ReactComponent as SendIcon } from "styles/images/icons/Send_v2.svg"
 import { ReactComponent as ReceiveIcon } from "styles/images/icons/Receive_v2.svg"
 import { ReactComponent as AddIcon } from "styles/images/icons/Buy_v2.svg"
-import { useIsWalletEmpty } from "data/queries/bank"
 
 const cx = classNames.bind(styles)
 
@@ -35,6 +33,7 @@ const NetWorth = () => {
   const addresses = useInterchainAddresses()
   const network = useNetwork()
   const networkName = useNetworkName()
+  const chainID = useChainID()
 
   // TODO: show CW20 balances and staked tokens
   const coinsValue = coins?.reduce((acc, { amount, denom }) => {
@@ -52,22 +51,27 @@ const NetWorth = () => {
       .map((key) => `${network[key].name}:${addresses[key]}`)
       .join(",")
 
-  const rampParams = {
-    network: "Terra",
-    apiKey: KADO_API_KEY,
-    product: "BUY",
-    onRevCurrency: "USDC",
-    networkList: ["TERRA", "OSMOSIS", "KUJIRA", "JUNO"].join(","),
-    productList: ["BUY", "SELL"].join(","),
-    cryptoList: ["USDC"].join(","),
-    onToAddressMulti,
+  const guardarianRampParams = addresses && {
+    partner_api_token: GUARDARIAN_API_KEY,
+    default_side: "buy_crypto",
+    side_toggle_disabled: "true",
+    payout_address: addresses["columbus-5"],
+    default_fiat_currency: "USD",
+    crypto_currencies_list: JSON.stringify([
+      {
+        ticker: "LUNC",
+        network: "LUNC",
+      },
+    ]),
+    theme: "light",
+    type: "narrow",
   }
 
-  const kadoUrlParams = qs.stringify(rampParams)
+  const guardarianUrlParams = qs.stringify(guardarianRampParams)
 
-  const openKadoWindow = () => {
+  const openGuardarianWindow = () => {
     window.open(
-      `${FIAT_RAMP}?${kadoUrlParams}`,
+      `${FIAT_RAMP}?${guardarianUrlParams}`,
       "_blank",
       "toolbar=yes,scrollbars=yes,resizable=yes,top=0,left=0,width=420,height=680"
     )
@@ -120,14 +124,17 @@ const NetWorth = () => {
           </Button>
           <h3>{capitalize(t("receive"))}</h3>
         </div>
-        {/*{networkName === "mainnet" && (*/}
-        {/*  <div className={styles.button__wrapper}>*/}
-        {/*    <Button className={styles.wallet_default} onClick={openKadoWindow}>*/}
-        {/*      <AddIcon className={styles.icon} />*/}
-        {/*    </Button>*/}
-        {/*    <h2>{t(capitalize("buy"))}</h2>*/}
-        {/*  </div>*/}
-        {/*)}*/}
+        {networkName === "mainnet" && chainID === "columbus-5" && (
+          <div className={styles.button__wrapper}>
+            <Button
+              className={styles.wallet_default}
+              onClick={openGuardarianWindow}
+            >
+              <AddIcon className={styles.icon} />
+            </Button>
+            <h2>{t(capitalize("buy"))}</h2>
+          </div>
+        )}
       </div>
     </article>
   )

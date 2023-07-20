@@ -22,8 +22,8 @@ export const MARS_TEST_EXPLORER = "https://testnet-explorer.marsprotocol.io"
 export const MARS_EXPLORER = "https://explorer.marsprotocol.io"
 
 /* website: fiat ramp */
-export const FIAT_RAMP = "https://app.kado.money/"
-export const KADO_API_KEY = "c22391a1-594f-4354-a742-187adb1b91bf"
+export const FIAT_RAMP = "https://guardarian.com/calculator/v1/"
+export const GUARDARIAN_API_KEY = "f109e5cd-7bdb-4563-9551-edd2cbba4a23"
 
 /* website: stake */
 export const TERRA_VALIDATORS =
