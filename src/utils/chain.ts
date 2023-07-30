@@ -1,4 +1,4 @@
-import { AccAddress } from "@terra-rebels/feather.js"
+import { AccAddress } from "@terraclassic-community/feather.js"
 
 export const isTerraChain = (chainID: string) => {
   return chainID.startsWith("phoenix-") || chainID.startsWith("pisco-")

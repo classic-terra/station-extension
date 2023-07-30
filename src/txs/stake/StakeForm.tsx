@@ -1,10 +1,14 @@
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useForm } from "react-hook-form"
-import { AccAddress, Coin, ValAddress } from "@terra-rebels/feather.js"
-import { Delegation, Validator } from "@terra-rebels/feather.js"
-import { MsgDelegate, MsgUndelegate } from "@terra-rebels/feather.js"
-import { MsgBeginRedelegate } from "@terra-rebels/feather.js"
+import {
+  AccAddress,
+  Coin,
+  ValAddress,
+} from "@terraclassic-community/feather.js"
+import { Delegation, Validator } from "@terraclassic-community/feather.js"
+import { MsgDelegate, MsgUndelegate } from "@terraclassic-community/feather.js"
+import { MsgBeginRedelegate } from "@terraclassic-community/feather.js"
 import { toAmount } from "@terra-money/terra-utils"
 import { getAmount } from "utils/coin"
 import { queryKey } from "data/query"

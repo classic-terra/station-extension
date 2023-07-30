@@ -11,7 +11,7 @@ import decrypt from "../../scripts/decrypt"
 import { addWallet, PasswordError } from "../../scripts/keystore"
 import useAuth from "../../hooks/useAuth"
 import { wordsFromAddress } from "utils/bech32"
-import { RawKey } from "@terra-rebels/feather.js"
+import { RawKey } from "@terraclassic-community/feather.js"
 
 interface Values {
   key: string

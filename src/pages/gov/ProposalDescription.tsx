@@ -1,4 +1,4 @@
-import { Proposal } from "@terra-rebels/feather.js"
+import { Proposal } from "@terraclassic-community/feather.js"
 import xss from "xss"
 
 const ProposalDescription = ({ proposal }: { proposal: Proposal }) => {

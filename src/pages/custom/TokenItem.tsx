@@ -7,7 +7,7 @@ import { truncate } from "@terra-money/terra-utils"
 import { FinderLink } from "components/general"
 import { Token } from "components/token"
 import styles from "./TokenItem.module.scss"
-import { AccAddress } from "@terra-rebels/feather.js"
+import { AccAddress } from "@terraclassic-community/feather.js"
 
 const cx = classNames.bind(styles)
 

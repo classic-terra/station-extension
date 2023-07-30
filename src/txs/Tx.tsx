@@ -11,11 +11,18 @@ import { head, isNil } from "ramda"
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { isDenom } from "@terra-money/terra-utils"
-import { Coin, Coins, CreateTxOptions } from "@terra-rebels/feather.js"
-import { Fee } from "@terra-rebels/feather.js"
-import { ConnectType, UserDenied } from "@terra-rebels/wallet-types"
-import { CreateTxFailed, TxFailed } from "@terra-rebels/wallet-types"
-import { useWallet, useConnectedWallet } from "@terra-rebels/use-wallet"
+import {
+  Coin,
+  Coins,
+  CreateTxOptions,
+} from "@terraclassic-community/feather.js"
+import { Fee } from "@terraclassic-community/feather.js"
+import { ConnectType, UserDenied } from "@terraclassic-community/wallet-types"
+import { CreateTxFailed, TxFailed } from "@terraclassic-community/wallet-types"
+import {
+  useWallet,
+  useConnectedWallet,
+} from "@terraclassic-community/use-wallet"
 
 import { Contents } from "types/components"
 import { has } from "utils/num"

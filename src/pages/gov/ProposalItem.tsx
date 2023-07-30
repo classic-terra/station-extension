@@ -1,4 +1,4 @@
-import { Proposal } from "@terra-rebels/feather.js"
+import { Proposal } from "@terraclassic-community/feather.js"
 import { FlexColumn } from "components/layout"
 import ProposalVotes from "./ProposalVotes"
 import ProposalHeader from "./ProposalHeader"

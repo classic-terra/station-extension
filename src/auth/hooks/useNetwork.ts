@@ -1,7 +1,10 @@
 import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { useNetworks } from "app/InitNetworks"
 import { getStoredNetwork, storeNetwork } from "../scripts/network"
-import { useWallet, WalletStatus } from "@terra-rebels/wallet-provider"
+import {
+  useWallet,
+  WalletStatus,
+} from "@terraclassic-community/wallet-provider"
 import { walletState } from "./useAuth"
 import is from "../scripts/is"
 import { useCustomLCDs } from "utils/localStorage"
