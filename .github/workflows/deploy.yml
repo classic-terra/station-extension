@@ -47,7 +47,7 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
       - name: Generate MD5 checksums
-        run: find build -type f -print0 | xargs -0 md5sum | sed "s/build/chrome-extension:\/\/akckefnapafjbpphkefbpkpcamkoaoai/g"" > chrome-extension-checksum.txt
+        run: find build -type f -print0 | xargs -0 md5sum | sed "s/build/chrome-extension:\/\/akckefnapafjbpphkefbpkpcamkoaoai/g" > chrome-extension-checksum.txt
       - uses: actions/upload-artifact@v3
         with:
           name: MD5 Chrome Extension Checksum File
@@ -69,7 +69,7 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
       - name: Generate MD5 checksums
-        run: find build -type f -print0 | xargs -0 md5sum | sed "s/build/moz-extension:\/\/a6d47be6-f4eb-4468-9bd9-6df63504def4/g"" > firefox-extension-checksum.txt
+        run: find build -type f -print0 | xargs -0 md5sum | sed "s/build/moz-extension:\/\/a6d47be6-f4eb-4468-9bd9-6df63504def4/g" > firefox-extension-checksum.txt
       - uses: actions/upload-artifact@v3
         with:
           name: MD5 Firefox Extension Checksum File
