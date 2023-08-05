@@ -1,0 +1,76 @@
+name: Build Terra Classic Station Extension
+on:
+  push:
+    tags:
+      - v*.*.*
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      CI: false
+      NODE_OPTIONS: "--max_old_space_size=4096"
+      REACT_APP_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Installing Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Installing dependencies
+        run: npm install
+      - name: Building project
+        run: npm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: built-extension
+          path: build
+  chrome:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: built-extension
+          path: build
+      - name: Publish chrome extension
+        run: |-
+          mv build/chrome.manifest.json build/manifest.json
+          rm -f build/firefox.manifest.json
+          cd build && npx chrome-webstore-upload-cli@2 upload
+        env:
+          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+      - name: Generate MD5 checksums
+        run: find build -type f -print0 | xargs -0 md5sum | sed "s/build/chrome-extension:\/\/akckefnapafjbpphkefbpkpcamkoaoai/g"" > chrome-extension-checksum.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: MD5 Chrome Extension Checksum File
+          path: chrome-extension-checksum.txt
+  firefox:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: built-extension
+          path: build
+      - name: Publish firefox extension
+        run: |-
+          mv build/firefox.manifest.json build/manifest.json
+          rm -f build/chrome.manifest.json
+          cd build && npx web-ext-submit@7
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+      - name: Generate MD5 checksums
+        run: find build -type f -print0 | xargs -0 md5sum | sed "s/build/moz-extension:\/\/a6d47be6-f4eb-4468-9bd9-6df63504def4/g"" > firefox-extension-checksum.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: MD5 Firefox Extension Checksum File
+          path: firefox-extension-checksum.txt
