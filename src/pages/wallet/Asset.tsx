@@ -32,17 +32,18 @@ const Asset = (props: Props) => {
   const { data: prices, ...pricesState } = useExchangeRates()
   const { route, setRoute } = useWalletRoute()
 
-  const coinPrice = props.price ?? 0
-  const change = props.change ?? 0
+  const coinPrice = (props.price || prices?.[token]?.price) ?? 0
+  const change = (props.change || prices?.[token]?.change) ?? 0
 
   const walletPrice = coinPrice * parseInt(balance ?? "0")
 
   return (
     <article
       className={styles.asset}
-      onClick={() =>
-        setRoute({ path: Path.coin, denom: id, previousPage: route })
-      }
+      onClick={() => {
+        if (route.path !== Path.coin)
+          setRoute({ path: Path.coin, denom: id, previousPage: route })
+      }}
     >
       <section className={styles.details}>
         <div className={styles.token__icon__container}>

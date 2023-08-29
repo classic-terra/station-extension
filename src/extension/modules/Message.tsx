@@ -1,17 +1,27 @@
 import { useState } from "react"
 import classNames from "classnames/bind"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
-import { Coins, Msg } from "@terraclassic-community/feather.js"
+import { Coins, Msg, MsgAminoCustom } from "@terraclassic-community/feather.js"
 import { readMsg } from "@terraclassic-community/msg-reader"
 import TxMessage from "app/containers/TxMessage"
 import styles from "./Message.module.scss"
 
 const cx = classNames.bind(styles)
 
+function parseAminoType(type: string) {
+  return type.split("/")[type.split("/").length - 1].split("-").join(" ")
+}
+
 const Message = ({ msg, warn }: { msg: Msg; warn: boolean }) => {
-  // @ts-expect-error
-  const summary = readMsg(msg)
-  const { "@type": type } = msg.toData()
+  const summary =
+    msg instanceof MsgAminoCustom
+      ? parseAminoType(msg.toAmino()["type"] ?? "")
+      : //@ts-expect-error
+        readMsg(msg)
+  const type =
+    msg instanceof MsgAminoCustom
+      ? msg.toAmino()["type"]
+      : msg.toData()["@type"]
 
   const [collapsed, setCollapsed] = useState(true)
   const toggle = () => setCollapsed(!collapsed)
@@ -35,7 +45,12 @@ const Message = ({ msg, warn }: { msg: Msg; warn: boolean }) => {
 
       {!collapsed && (
         <section>
-          {[["type", type], ...Object.entries(msg)].map(([key, value]) => {
+          {[
+            ["type", type],
+            ...Object.entries(
+              msg instanceof MsgAminoCustom ? msg.toAmino()["value"] : msg ?? {}
+            ),
+          ].map(([key, value]) => {
             return (
               <article className={styles.detail} key={key}>
                 <h1>{key}</h1>

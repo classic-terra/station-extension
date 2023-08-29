@@ -1,3 +1,5 @@
+import Station from "@terraclassic-community/station-connector"
+
 // legacy terra webapps
 window.isTerraExtensionAvailable = true
 // new inetchain webapps
@@ -9,7 +11,7 @@ window.isStationExtensionAvailable = true
 const STATION_INFO = {
   name: "Terra Classic Station Wallet",
   identifier: "terra-classic-station",
-  icon: "https://assets.terrarebels.net/icon/station-extension/icon.png",
+  icon: "https://station-assets.terraclassic.community/img/station.png",
 }
 
 if (
@@ -29,3 +31,5 @@ if (
 } else {
   window.interchainWallets = [STATION_INFO]
 }
+
+window.terraClassicStation = new Station()

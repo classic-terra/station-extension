@@ -9,9 +9,10 @@ import AssetChain from "./AssetChain"
 import { Button } from "components/general"
 import { useTranslation } from "react-i18next"
 import { capitalize } from "@mui/material"
-import { isTerraChain } from "utils/chain"
 import Vesting from "./Vesting"
+import { isTerraChain } from "utils/chain"
 import { useIBCBaseDenoms } from "data/queries/ibc"
+import { useNetworkName } from "data/wallet"
 
 const AssetPage = () => {
   const currency = useCurrency()
@@ -20,23 +21,29 @@ const AssetPage = () => {
   const readNativeDenom = useNativeDenoms()
   const { t } = useTranslation()
   const { setRoute, route } = useWalletRoute()
+  const networkName = useNetworkName()
   const routeDenom = route.path === Path.coin ? route.denom ?? "uluna" : "uluna"
-  const [chain, denom] = routeDenom.includes(":")
-    ? routeDenom.split(":")
+  const [chain, denom] = routeDenom.includes("*")
+    ? routeDenom.split("*")
     : [undefined, routeDenom]
   const { token, symbol, icon, decimals } = readNativeDenom(denom, chain)
 
-  const filteredBalances = balances.filter(
-    (b) => readNativeDenom(b.denom).token === token
-  )
+  const isLuncOffClassic = symbol === "LUNC" && networkName !== "classic"
 
-  const price = symbol?.endsWith("...") ? 0 : prices?.[token]?.price ?? 0
+  let price
+  if (isLuncOffClassic) {
+    price = prices?.["uluna:classic"]?.price ?? 0
+  } else if (!symbol.endsWith("...")) {
+    price = prices?.[token]?.price ?? 0
+  } else {
+    price = 0
+  }
 
   const unknownIBCDenomsData = useIBCBaseDenoms(
     balances
       .map(({ denom, chain }) => ({ denom, chainID: chain }))
-      .filter(({ denom }) => {
-        const data = readNativeDenom(denom)
+      .filter(({ denom, chainID }) => {
+        const data = readNativeDenom(denom, chainID)
         return denom.startsWith("ibc/") && data.symbol.endsWith("...")
       })
   )
@@ -46,25 +53,34 @@ const AssetPage = () => {
       data
         ? {
             ...acc,
-            [data.ibcDenom]: {
+            [[data.ibcDenom, data.chainIDs[data.chainIDs.length - 1]].join(
+              "*"
+            )]: {
               baseDenom: data.baseDenom,
-              chains: data.chainIDs,
+              chains: data?.chainIDs,
             },
           }
         : acc,
     {} as Record<string, { baseDenom: string; chains: string[] }>
   )
 
+  const filteredBalances = balances.filter((b) => {
+    return (
+      readNativeDenom(b.denom, b.chain).token === token &&
+      readNativeDenom(b.denom, b.chain).symbol === symbol
+    )
+  })
+
   const filteredUnsupportedBalances = balances.filter((b) => {
     // only return unsupported token if the current chain is found in the ibc path
     if (chain) {
       return (
-        unknownIBCDenoms[b.denom]?.baseDenom === token &&
-        unknownIBCDenoms[b.denom]?.chains?.includes(chain)
+        unknownIBCDenoms[[b.denom, b.chain].join("*")]?.baseDenom === token &&
+        unknownIBCDenoms[[b.denom, b.chain].join("*")]?.chains?.[0] === chain
       )
     }
 
-    return unknownIBCDenoms[b.denom]?.baseDenom === token
+    return unknownIBCDenoms[[b.denom, b.chain].join("*")]?.baseDenom === token
   })
 
   const totalBalance = [
@@ -78,16 +94,14 @@ const AssetPage = () => {
         <TokenIcon token={token} icon={icon} size={50} />
         <h1>
           {currency.symbol}{" "}
-          <Read
-            decimals={decimals}
-            amount={totalBalance * price}
-            fixed={2}
-            token={symbol}
-          />
+          {price ? (
+            <Read decimals={decimals} amount={totalBalance * price} fixed={2} />
+          ) : (
+            <span>—</span>
+          )}
         </h1>
         <p>
-          <Read decimals={decimals} amount={totalBalance} token={symbol} />{" "}
-          {symbol}
+          <Read decimals={decimals} amount={totalBalance} fixed={2} /> {symbol}
         </p>
       </section>
       <section className={styles.chainlist__container}>
@@ -106,9 +120,12 @@ const AssetPage = () => {
                       balance={b.amount}
                       chain={b.chain}
                       token={token}
+                      denom={b.denom}
                       decimals={decimals}
                     />
-                    {token === "uluna" && isTerraChain(b.chain) && <Vesting />}
+                    {token === "uluna" &&
+                      symbol !== "LUNC" &&
+                      isTerraChain(b.chain) && <Vesting />}
                   </div>
                 ))}
             </div>
@@ -129,8 +146,11 @@ const AssetPage = () => {
                       balance={b.amount}
                       chain={b.chain}
                       token={token}
+                      denom={b.denom}
                       decimals={decimals}
-                      path={unknownIBCDenoms[b.denom]?.chains}
+                      path={
+                        unknownIBCDenoms[[b.denom, b.chain].join("*")]?.chains
+                      }
                       ibcDenom={b.denom}
                     />
                   </div>
@@ -150,7 +170,7 @@ const AssetPage = () => {
               previousPage: route,
             })
           }
-          disabled={filteredBalances.length === 0}
+          disabled={filteredBalances.length === 0 || isLuncOffClassic}
         >
           {t("Send")}
         </Button>

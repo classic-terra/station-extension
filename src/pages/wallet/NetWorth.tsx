@@ -4,15 +4,16 @@ import { TooltipIcon } from "components/display"
 import { useBankBalance, useIsWalletEmpty } from "data/queries/bank"
 import { useExchangeRates } from "data/queries/coingecko"
 import { useCurrency } from "data/settings/Currency"
-import { useNativeDenoms } from "data/token"
-import { useTranslation } from "react-i18next"
-import styles from "./NetWorth.module.scss"
-import { Path, useWalletRoute } from "./Wallet"
-import { capitalize } from "@mui/material"
 import NetWorthTooltip from "./NetWorthTooltip"
+import { Path, useWalletRoute } from "./Wallet"
+import { useTranslation } from "react-i18next"
+import { useNativeDenoms } from "data/token"
+import styles from "./NetWorth.module.scss"
+import { capitalize } from "@mui/material"
 import { FIAT_RAMP, GUARDARIAN_API_KEY } from "config/constants"
 // import { Add as AddIcon, Send as SendIcon } from "@mui/icons-material"
 import classNames from "classnames"
+import { useMemo } from "react"
 import qs from "qs"
 import { useChainID, useNetwork, useNetworkName } from "data/wallet"
 import { useInterchainAddresses } from "auth/hooks/useAddress"
@@ -24,7 +25,15 @@ const cx = classNames.bind(styles)
 
 const NetWorth = () => {
   const { t } = useTranslation()
+
   const isWalletEmpty = useIsWalletEmpty()
+  const networks = useNetwork()
+  const chainID = useChainID()
+  const availableGasDenoms = useMemo(() => {
+    return Object.keys(networks[chainID]?.gasPrices ?? {})
+  }, [chainID, networks])
+  const sendButtonDisabled = isWalletEmpty && !!availableGasDenoms.length
+
   const currency = useCurrency()
   const coins = useBankBalance()
   const { data: prices } = useExchangeRates()
@@ -33,7 +42,6 @@ const NetWorth = () => {
   const addresses = useInterchainAddresses()
   const network = useNetwork()
   const networkName = useNetworkName()
-  const chainID = useChainID()
 
   // TODO: show CW20 balances and staked tokens
   const coinsValue = coins?.reduce((acc, { amount, denom }) => {
@@ -47,7 +55,7 @@ const NetWorth = () => {
   }, 0)
   const onToAddressMulti =
     addresses &&
-    Object.keys(addresses)
+    Object.keys(addresses ?? {})
       .map((key) => `${network[key].name}:${addresses[key]}`)
       .join(",")
 
@@ -98,7 +106,7 @@ const NetWorth = () => {
           <Button
             color="primary"
             className={styles.wallet_primary}
-            disabled={isWalletEmpty}
+            disabled={sendButtonDisabled}
             onClick={() =>
               setRoute({
                 path: Path.send,
