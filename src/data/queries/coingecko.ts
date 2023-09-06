@@ -80,13 +80,13 @@ export const useExchangeRates = () => {
         ])
 
       const priceObject = Object.fromEntries(
-        Object.entries(prices).map(([denom, { usd, change24h }]) => {
+        Object.entries(prices ?? {}).map(([denom, { usd, change24h }]) => {
           if (denom === "uluna") {
             return [
               denom,
               {
-                price: prices.uluna_classic.usd * fiatPrice,
-                change: prices.uluna_classic.change24h,
+                price: prices?.uluna_classic?.usd * fiatPrice,
+                change: prices?.uluna_classic?.change24h,
               },
             ]
           }
@@ -98,10 +98,10 @@ export const useExchangeRates = () => {
               change: change24h,
             },
           ]
-        })
+        }) ?? {}
       )
 
-      Object.entries(TFM_IDs).forEach(([key, value]) => {
+      Object.entries(TFM_IDs ?? {}).forEach(([key, value]) => {
         if (!priceObject[key] && priceObject[value]) {
           priceObject[key] = {
             ...priceObject[value],
@@ -110,7 +110,7 @@ export const useExchangeRates = () => {
       })
 
       // add staked tokens and set price to 100
-      Object.entries(STAKED_TOKENS).forEach(([key]) => {
+      Object.entries(STAKED_TOKENS ?? {}).forEach(([key]) => {
         if (!priceObject[key]) {
           priceObject[key] = {
             price: 100,

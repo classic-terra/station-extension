@@ -18,18 +18,10 @@ enum Path {
 type Route =
   | {
       path: Path.wallet
+      denom?: string
     }
   | {
-      path: Path.coin
-      denom: string
-      previousPage: Route
-    }
-  | {
-      path: Path.receive
-      previousPage: Route
-    }
-  | {
-      path: Path.send
+      path: Path.coin | Path.receive | Path.send
       denom?: string
       previousPage: Route
     }
@@ -53,7 +45,7 @@ const Wallet = () => {
         className={styles.back}
         onClick={() => setRoute(route.previousPage)}
       >
-        <BackIcon width={18} height={18} />
+        <BackIcon width={18} height={18} data-testid="BackIcon" />
       </button>
     )
   }

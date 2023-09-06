@@ -22,8 +22,4 @@ cp public/firefox.manifest.json build/manifest.json
 version=$(cat build/manifest.json | jq -r '.version')
 zip -r "firefox-extension-$version.zip" build/* > /dev/null
 
-# put files back in the right position
-cp public/chrome.manifest.json build/chrome.manifest.json
-cp public/firefox.manifest.json build/firefox.manifest.json
-
 echo "DONE!"
