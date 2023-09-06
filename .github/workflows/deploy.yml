@@ -78,6 +78,6 @@ jobs:
       - name: Upload firefox extension source code
         run: |
           echo "VERSION_NUMBER=$(jq -r .version build/manifest.json)" >> $GITHUB_ENV
-          echo "ACCESS_TOKEN=$(npx jwtgen -a HS256 -s ${secrets.WEB_EXT_API_SECRET} -c 'iss=${secrets.WEB_EXT_API_KEY}' -e 300)" >> $GITHUB_ENV
+          echo "ACCESS_TOKEN=$(npx jwtgen -a HS256 -s ${secrets.WEB_EXT_API_SECRET} -c \"iss=${secrets.WEB_EXT_API_KEY}\" -e 300)" >> $GITHUB_ENV
           git archive -o source.zip HEAD
-          curl --fail --show-error -H "Authorization: JWT $ACCESS_TOKEN" -g -XPOST -F "source=@source.zip" -F "license=MIT" "https://addons.mozilla.org/api/v5/addons/addon/${secrets.WEB_EXT_ID}/versions/$VERSION_NUMBER/"
+          curl --fail --show-error -H "Authorization: JWT ${env.ACCESS_TOKEN}" -g -XPOST -F "source=@source.zip" -F "license=MIT" "https://addons.mozilla.org/api/v5/addons/addon/${secrets.WEB_EXT_ID}/versions/${env.VERSION_NUMBER}/"
