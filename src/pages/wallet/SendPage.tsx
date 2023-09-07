@@ -98,7 +98,7 @@ const SendPage = () => {
       ).sort(
         (a, b) => b.price * parseInt(b.balance) - a.price * parseInt(a.balance)
       ),
-    [balances, readNativeDenom, networkName, prices]
+    [balances, readNativeDenom, prices]
   )
 
   const filteredAssets = useMemo(
