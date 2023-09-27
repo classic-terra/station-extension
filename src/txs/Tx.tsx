@@ -1,5 +1,11 @@
-import { Fragment, ReactNode } from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import {
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { QueryKey, useQuery } from "react-query"
 import { useNavigate } from "react-router-dom"
@@ -15,17 +21,20 @@ import {
   Coin,
   Coins,
   CreateTxOptions,
+  Fee,
 } from "@terraclassic-community/feather.js"
-import { Fee } from "@terraclassic-community/feather.js"
 
 import { Contents } from "types/components"
 import { has } from "utils/num"
 import { getErrorMessage } from "utils/error"
 import { getLocalSetting, SettingKey } from "utils/localStorage"
-import { combineState, RefetchOptions } from "data/query"
-import { queryKey } from "data/query"
+import { combineState, queryKey, RefetchOptions } from "data/query"
 import { useNetwork } from "data/wallet"
-import { isBroadcastingState, latestTxState } from "data/queries/tx"
+import {
+  isBroadcastingState,
+  latestTxState,
+  useCarbonFees,
+} from "data/queries/tx"
 import {
   CoinBalance,
   useBankBalance,
@@ -33,8 +42,8 @@ import {
 } from "data/queries/bank"
 
 import { Pre } from "components/general"
-import { Grid, Flex } from "components/layout"
-import { FormError, Select, Input, FormItem, Submit } from "components/form"
+import { Flex, Grid } from "components/layout"
+import { FormError, FormItem, Input, Select, Submit } from "components/form"
 import { Modal } from "components/feedback"
 import { Details } from "components/display"
 import { Read } from "components/token"
@@ -42,14 +51,13 @@ import ConnectWallet from "app/sections/ConnectWallet"
 import useToPostMultisigTx from "pages/multisig/utils/useToPostMultisigTx"
 import { isWallet, useAuth } from "auth"
 import { PasswordError } from "auth/scripts/keystore"
-import { toInput, CoinInput, calcTaxes } from "./utils"
+import { calcTaxes, CoinInput, toInput } from "./utils"
 import styles from "./Tx.module.scss"
 import { useInterchainLCDClient } from "data/queries/lcdClient"
 import { useInterchainAddresses } from "auth/hooks/useAddress"
 import { getShouldTax, useTaxCap, useTaxRate } from "data/queries/treasury"
 import { useNativeDenoms } from "data/token"
 import { getAmount, sortByDenom } from "../utils/coin"
-import { useCarbonFees } from "data/queries/tx"
 
 const cx = classNames.bind(styles)
 
