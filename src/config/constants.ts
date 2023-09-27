@@ -20,6 +20,7 @@ export const DOCUMENTATION =
 export const SETUP = "https://setup-station.terraclassic.community/"
 export const MARS_TEST_EXPLORER = "https://testnet-explorer.marsprotocol.io"
 export const MARS_EXPLORER = "https://explorer.marsprotocol.io"
+export const CARBON_API = "https://api.carbon.network/"
 
 /* website: fiat ramp */
 export const FIAT_RAMP = "https://guardarian.com/calculator/v1/"
