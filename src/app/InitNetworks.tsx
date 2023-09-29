@@ -16,27 +16,9 @@ export const [useNetworks, NetworksProvider] = createContext<{
 }>("useNetworks")
 
 const InitNetworks = ({ children }: PropsWithChildren<{}>) => {
-  const [defaultNetworks, setNetworks] = useState<InterchainNetworks>()
+  const [networks, setNetworks] = useState<InterchainNetworks>()
   const { customLCDs } = useCustomLCDs()
   const { customChains } = useCustomChains()
-
-  const networks = {
-    mainnet: {
-      ...customChains?.mainnet,
-      ...defaultNetworks?.mainnet,
-    },
-    testnet: {
-      ...customChains?.testnet,
-      ...defaultNetworks?.testnet,
-    },
-    classic: {
-      ...customChains?.classic,
-      ...defaultNetworks?.classic,
-    },
-    localterra: {
-      ...defaultNetworks?.localterra,
-    },
-  }
 
   useEffect(() => {
     const fetchChains = async () => {
@@ -46,7 +28,22 @@ const InitNetworks = ({ children }: PropsWithChildren<{}>) => {
           baseURL: STATION_ASSETS,
         }
       )
-      setNetworks(chains)
+
+      const networks = {
+        mainnet: {
+          ...customChains?.mainnet,
+          ...chains?.mainnet,
+        },
+        testnet: {
+          ...customChains?.testnet,
+          ...chains?.testnet,
+        },
+        localterra: {
+          ...chains?.localterra,
+        },
+      }
+
+      setNetworks(networks)
     }
 
     fetchChains()
@@ -57,7 +54,6 @@ const InitNetworks = ({ children }: PropsWithChildren<{}>) => {
         {
           ...networks.mainnet,
           ...networks.testnet,
-          ...networks.classic,
         } ?? {}
       ).map((chain) => {
         const lcd = customLCDs[chain?.chainID] ?? chain.lcd
