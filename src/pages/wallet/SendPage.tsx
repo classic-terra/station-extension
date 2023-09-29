@@ -68,7 +68,7 @@ const SendPage = () => {
     () =>
       Object.values(
         (balances ?? []).reduce((acc, { denom, amount, chain }) => {
-          const data = readNativeDenom(denom)
+          const data = readNativeDenom(denom, chain)
           // TODO: resolve ibc lun(a|c) balances better at balance fetch
           // then update max / balance / messaging to translate lun(a|c)
           // for now, check if token is LUNC and network isn't classic, discard if so
@@ -98,7 +98,7 @@ const SendPage = () => {
       ).sort(
         (a, b) => b.price * parseInt(b.balance) - a.price * parseInt(a.balance)
       ),
-    [balances, readNativeDenom, networkName, prices]
+    [balances, readNativeDenom, prices]
   )
 
   const filteredAssets = useMemo(
@@ -126,17 +126,19 @@ const SendPage = () => {
 
   const amount = toAmount(input, { decimals })
 
-  const availableChains = useMemo(
-    () =>
-      availableAssets
-        .find(({ denom }) => denom === (asset ?? defaultAsset))
-        ?.chains.sort((a, b) => {
-          if (networks[a]?.prefix === "terra") return -1
-          if (networks[b]?.prefix === "terra") return 1
-          return 0
-        }),
-    [asset, availableAssets, defaultAsset, networks]
-  )
+  const availableChains = useMemo(() => {
+    const chainsFromAsset = availableAssets.find(
+      ({ denom }) => denom === (asset ?? defaultAsset)
+    )?.chains
+
+    const uniqueChains = Array.from(new Set(chainsFromAsset))
+
+    return uniqueChains.sort((a, b) => {
+      if (networks[a]?.prefix === "terra") return -1
+      if (networks[b]?.prefix === "terra") return 1
+      return 0
+    })
+  }, [asset, availableAssets, defaultAsset, networks])
 
   const token = balances.find(
     ({ denom, chain }) =>

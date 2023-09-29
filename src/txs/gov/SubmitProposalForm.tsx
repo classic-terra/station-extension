@@ -82,7 +82,11 @@ type TxValues =
   | ParameterChangeProposalValues
   | ExecuteContractProposalValues
 
-const DEFAULT_PAREMETER_CHANGE = { subspace: "", key: "", value: "" }
+const DEFAULT_PAREMETER_CHANGE = {
+  subspace: "",
+  key: "",
+  value: "",
+} as ParamChange
 
 const SubmitProposalForm = ({ chain }: { chain: string }) => {
   const { t } = useTranslation()
@@ -188,7 +192,7 @@ const SubmitProposalForm = ({ chain }: { chain: string }) => {
 
   /* fee */
   const estimationTxValues = useMemo(
-    (): TextProposalValues => ({
+    (): TxValues => ({
       type: ProposalType.TEXT,
       title: ESTIMATE.TITLE,
       description: ESTIMATE.DESCRIPTION,
@@ -405,6 +409,7 @@ const SubmitProposalForm = ({ chain }: { chain: string }) => {
     <Card {...state} inputCard>
       <Tx {...tx}>
         {({ max, fee, submit }) => (
+          // @ts-expect-error
           <Form onSubmit={handleSubmit(submit.fn)}>
             <Grid gap={4}>
               {networks[chain]?.prefix === "terra" && (

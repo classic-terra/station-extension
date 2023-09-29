@@ -31,6 +31,7 @@ const Input = forwardRef(
             before: token || actionButton,
             after: selectBefore,
           })}
+          onWheel={(e) => e.currentTarget.blur()}
           step="any"
           autoComplete="off"
           ref={ref}
@@ -38,9 +39,7 @@ const Input = forwardRef(
         {token && (
           <WithTokenItem token={token}>
             {({ symbol }) => (
-              <Flex className={classNames(styles.symbol, styles.after)}>
-                {symbol}
-              </Flex>
+              <Flex className={cx(styles.symbol, styles.after)}>{symbol}</Flex>
             )}
           </WithTokenItem>
         )}
@@ -48,7 +47,7 @@ const Input = forwardRef(
         {actionButton && (
           <button
             type="button"
-            className={classNames(styles.symbol, styles.after)}
+            className={cx(styles.symbol, styles.after)}
             onClick={(e) => {
               actionButton.onClick()
               e.stopPropagation()
@@ -78,7 +77,7 @@ export const SearchInput = forwardRef(
   ) => {
     return (
       <div
-        className={classNames(
+        className={cx(
           styles.wrapper,
           styles.search,
           attrs.small && styles.search__small,
@@ -88,10 +87,7 @@ export const SearchInput = forwardRef(
       >
         <input
           {...attrs}
-          className={classNames(
-            styles.input,
-            attrs.small && styles.input__small
-          )}
+          className={cx(styles.input, attrs.small && styles.input__small)}
           inputMode="search"
           autoComplete="off"
           ref={ref}

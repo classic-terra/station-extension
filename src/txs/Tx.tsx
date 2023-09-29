@@ -1,5 +1,11 @@
-import { Fragment, ReactNode } from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import {
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { QueryKey, useQuery } from "react-query"
 import { useNavigate } from "react-router-dom"
@@ -15,17 +21,20 @@ import {
   Coin,
   Coins,
   CreateTxOptions,
+  Fee,
 } from "@terraclassic-community/feather.js"
-import { Fee } from "@terraclassic-community/feather.js"
 
 import { Contents } from "types/components"
 import { has } from "utils/num"
 import { getErrorMessage } from "utils/error"
 import { getLocalSetting, SettingKey } from "utils/localStorage"
-import { combineState, RefetchOptions } from "data/query"
-import { queryKey } from "data/query"
+import { combineState, queryKey, RefetchOptions } from "data/query"
 import { useNetwork } from "data/wallet"
-import { isBroadcastingState, latestTxState } from "data/queries/tx"
+import {
+  isBroadcastingState,
+  latestTxState,
+  useCarbonFees,
+} from "data/queries/tx"
 import {
   CoinBalance,
   useBankBalance,
@@ -34,7 +43,7 @@ import {
 
 import { Pre } from "components/general"
 import { Flex, Grid } from "components/layout"
-import { FormError, Submit, Select, Input, FormItem } from "components/form"
+import { FormError, FormItem, Input, Select, Submit } from "components/form"
 import { Modal } from "components/feedback"
 import { Details } from "components/display"
 import { Read } from "components/token"
@@ -42,14 +51,15 @@ import ConnectWallet from "app/sections/ConnectWallet"
 import useToPostMultisigTx from "pages/multisig/utils/useToPostMultisigTx"
 import { isWallet, useAuth } from "auth"
 import { PasswordError } from "auth/scripts/keystore"
-
-import { toInput, CoinInput, calcTaxes } from "./utils"
+import { calcTaxes, CoinInput, toInput } from "./utils"
 import styles from "./Tx.module.scss"
 import { useInterchainLCDClient } from "data/queries/lcdClient"
 import { useInterchainAddresses } from "auth/hooks/useAddress"
 import { getShouldTax, useTaxCap, useTaxRate } from "data/queries/treasury"
 import { useNativeDenoms } from "data/token"
 import { getAmount, sortByDenom } from "../utils/coin"
+
+const cx = classNames.bind(styles)
 
 interface Props<TxValues> {
   /* Only when the token is paid out of the balance held */
@@ -110,6 +120,7 @@ function Tx<TxValues>(props: Props<TxValues>) {
   const setLatestTx = useSetRecoilState(latestTxState)
   const isBroadcasting = useRecoilValue(isBroadcastingState)
   const readNativeDenom = useNativeDenoms()
+  const { data: carbonFees } = useCarbonFees()
 
   /* taxes */
   const isClassic = networks[chain]?.isClassic
@@ -147,6 +158,12 @@ function Tx<TxValues>(props: Props<TxValues>) {
       if (!wallet) return 0
       if (!simulationTx || !simulationTx.msgs.length) return 0
       try {
+        if (chain.startsWith("carbon-")) {
+          return Number(
+            carbonFees?.costs[key.msgs?.[0] ?? ""] ??
+              carbonFees?.costs["default_fee"]
+          )
+        }
         const unsignedTx = await lcd.tx.create([{ address: key.address }], {
           ...simulationTx,
           feeDenoms: [gasDenom],
@@ -171,14 +188,16 @@ function Tx<TxValues>(props: Props<TxValues>) {
 
   const getGasAmount = useCallback(
     (denom: CoinDenom) => {
-      const gasPrice = networks[chain]?.gasPrices[denom]
+      const gasPrice = chain?.startsWith("carbon-")
+        ? carbonFees?.prices[denom]
+        : networks[chain]?.gasPrices[denom]
       if (isNil(estimatedGas) || !gasPrice) return "0"
       return new BigNumber(estimatedGas)
         .times(gasPrice)
         .integerValue(BigNumber.ROUND_CEIL)
         .toString()
     },
-    [estimatedGas, chain, networks]
+    [estimatedGas, chain, networks, carbonFees]
   )
 
   const gasAmount = getGasAmount(gasDenom)
@@ -324,10 +343,10 @@ function Tx<TxValues>(props: Props<TxValues>) {
     return (
       <button
         type="button"
-        className={classNames({ muted: !isMax })}
+        className={cx({ muted: !isMax })}
         onClick={onClick ? () => onClick(max) : () => setIsMax(!isMax)}
       >
-        <Flex gap={4} start>
+        <Flex gap={4}>
           <AccountBalanceWalletIcon
             fontSize="inherit"
             className={styles.icon}
@@ -407,7 +426,7 @@ function Tx<TxValues>(props: Props<TxValues>) {
                   amount={balanceAfterTx}
                   token={baseDenom ?? token}
                   decimals={decimals}
-                  className={classNames(insufficient && "danger")}
+                  className={cx(insufficient && "danger")}
                 />
               </dd>
             </>
