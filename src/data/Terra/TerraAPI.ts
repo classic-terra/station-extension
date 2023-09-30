@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js"
 import { ValAddress, Validator } from "@terraclassic-community/feather.js"
 import { TerraValidator } from "types/validator"
 import { TerraProposalItem } from "types/proposal"
-import { useNetwork, useNetworkName } from "data/wallet"
+import { useNetwork } from "data/wallet"
 import { queryKey, RefetchOptions } from "../query"
 import { useValidators } from "data/queries/staking"
 
@@ -26,7 +26,7 @@ export enum AggregateWallets {
 }
 
 export const useTerraAPIURL = () => {
-  return "https://api.terrarebels.net"
+  return "https://api.terraclassic.community"
 }
 
 export const useIsTerraAPIAvailable = () => {
@@ -54,8 +54,7 @@ export const useTerraAPI = <T>(path: string, params?: object, fallback?: T) => {
 export type GasPrices = Record<Denom, Amount>
 
 export const useGasPrices = () => {
-  const current = useTerraAPIURL()
-  const baseURL = current
+  const baseURL = useTerraAPIURL()
   const path = "/gas-prices"
 
   return useQuery(

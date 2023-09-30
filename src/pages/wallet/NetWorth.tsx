@@ -40,7 +40,6 @@ const NetWorth = () => {
   const readNativeDenom = useNativeDenoms()
   const { setRoute, route } = useWalletRoute()
   const addresses = useInterchainAddresses()
-  const network = useNetwork()
   const networkName = useNetworkName()
 
   // TODO: show CW20 balances and staked tokens
@@ -53,11 +52,11 @@ const NetWorth = () => {
         10 ** decimals
     )
   }, 0)
-  const onToAddressMulti =
-    addresses &&
-    Object.keys(addresses ?? {})
-      .map((key) => `${network[key].name}:${addresses[key]}`)
-      .join(",")
+  // const onToAddressMulti =
+  //   addresses &&
+  //   Object.keys(addresses ?? {})
+  //     .map((key) => `${network[key].name}:${addresses[key]}`)
+  //     .join(",")
 
   const guardarianRampParams = addresses && {
     partner_api_token: GUARDARIAN_API_KEY,

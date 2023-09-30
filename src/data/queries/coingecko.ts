@@ -1,17 +1,23 @@
 import { useCallback } from "react"
 import { useQuery } from "react-query"
 import { queryKey, RefetchOptions } from "../query"
-import { CURRENCY_KEY, STATION_ASSETS, ASSETS } from "config/constants"
+import { ASSETS, CURRENCY_KEY, STATION_ASSETS } from "config/constants"
 import axios from "axios"
 import { useCurrency } from "data/settings/Currency"
 import { useNetworkName } from "data/wallet"
+import { useLCDClient } from "./lcdClient"
+import { sortDenoms } from "../../utils/coin"
+import { useMemoizedPrices } from "./oracle"
 
 // TODO: remove/move somewhere else
 export const useActiveDenoms = () => {
+  const lcd = useLCDClient()
+
   return useQuery(
     [queryKey.coingecko.activeDenoms],
     async () => {
-      return ["uluna"]
+      const activeDenoms = await lcd.oracle.activeDenoms()
+      return sortDenoms(["uluna", ...activeDenoms])
     },
     { ...RefetchOptions.INFINITY }
   )
@@ -53,12 +59,15 @@ const STAKED_TOKENS: Record<string, string> = {
 
 export const useExchangeRates = () => {
   const currency = useCurrency()
-  const isClassic = useNetworkName() === "classic"
+  const network = useNetworkName()
+
+  const { data: oraclePrices } = useMemoizedPrices("uusd")
+  const { uluna: ulunaPrice } = oraclePrices || {}
 
   return useQuery(
-    [queryKey.coingecko.exchangeRates, currency, isClassic],
+    [queryKey.coingecko.exchangeRates, currency, network],
     async () => {
-      const [{ data: TFM_IDs }, { data: prices }, fiatPrice] =
+      const [{ data: TFM_IDs }, { data: prices }, ulunaPrices, fiatPrice] =
         await Promise.all([
           axios.get<Record<string, string>>("station/tfm.json", {
             baseURL: ASSETS,
@@ -66,6 +75,16 @@ export const useExchangeRates = () => {
           axios.get<Record<string, TFMPrice>>(
             `https://price.api.tfm.com/tokens/?limit=1500`
           ),
+          {
+            uluna: {
+              usd: ulunaPrice,
+              change24h: ulunaPrice,
+            },
+            uluna_classic: {
+              usd: ulunaPrice,
+              change24h: ulunaPrice,
+            },
+          },
           (async () => {
             if (currency.id === "USD") return 1
 
@@ -81,12 +100,13 @@ export const useExchangeRates = () => {
 
       const priceObject = Object.fromEntries(
         Object.entries(prices ?? {}).map(([denom, { usd, change24h }]) => {
-          if (denom === "uluna") {
+          // if token is LUNA and network is mainnet, use LUNC price
+          if (denom === "uluna" || denom === "uluna_classic") {
             return [
               denom,
               {
-                price: prices?.uluna_classic?.usd * fiatPrice,
-                change: prices?.uluna_classic?.change24h,
+                price: ulunaPrices?.uluna_classic?.usd * fiatPrice,
+                change: ulunaPrices?.uluna_classic?.change24h,
               },
             ]
           }
@@ -121,7 +141,7 @@ export const useExchangeRates = () => {
 
       return priceObject
     },
-    { ...RefetchOptions.DEFAULT }
+    { ...RefetchOptions.DEFAULT, enabled: !!ulunaPrice }
   )
 }
 
@@ -134,7 +154,7 @@ export const useMemoizedCalcValue = () => {
   return useCallback<CalcValue>(
     ({ amount, denom }) => {
       if (!memoizedPrices) return
-      return Number(amount) * Number(memoizedPrices[denom] ?? 0)
+      return Number(amount) * Number(memoizedPrices[denom]?.price ?? 0)
     },
     [memoizedPrices]
   )

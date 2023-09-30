@@ -39,11 +39,13 @@ export const useGammTokens = () => {
     [queryKey.gammTokens],
     async () => {
       try {
-        const { data } = await request.get<IOsmosisPoolResponse>(
-          "/pools/v2/all?low_liquidity=true",
-          { baseURL: OSMOSIS_API_URL }
-        )
-        return data
+        const { data } = await request.get("/pools/v2/all?low_liquidity=true", {
+          baseURL: OSMOSIS_API_URL,
+        })
+
+        if (data?.status_code) return
+
+        return data as IOsmosisPoolResponse
       } catch (error) {
         console.error(error)
         return
